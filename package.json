@@ -1,0 +1,30 @@
+{
+  "name": "programa-lineal",
+  "version": "1.0.0",
+  "description": "Resuelve algunos problemas que nos dejan en algebra lineal",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wasberth/programa-lineal.git"
+  },
+  "keywords": [
+    "algebra",
+    "lineal",
+    "matrices",
+    "sistemas",
+    "ecuaciones"
+  ],
+  "author": "Wilberth",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Wasberth/programa-lineal/issues"
+  },
+  "homepage": "https://github.com/Wasberth/programa-lineal#readme",
+  "dependencies": {
+    "express": "^4.17.3",
+    "mathjs": "^10.4.2"
+  }
+}
