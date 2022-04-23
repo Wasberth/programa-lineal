@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/matrix.css">
+
+    <script src="js/form-handler.js"></script>
+
+    <title>Resolucion matrices</title>
+</head>
+
+<body>
+
+    <style>
+        .separate {
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <div class="container" style="margin-top: 1rem;">
+
+        <div class="row separate">
+            <h2>Operaciones con matrices</h2>
+
+            <p>Ingrese la matriz A para realizar operaciones</p>
+        </div>
+
+        <div class="row separate">
+            <div>
+                <form id="form-control-a">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="rows-label-a">Numero de filas y columnas</span>
+                        <input class="form-control" id="form-rows-a" type="number" min="1" max="10" value="3" aria-describedby="rows-label-a">
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Actualizar">
+                </form>
+            </div>
+        </div>
+
+        <form class="row" id="main-form" action="calculate1" method="post">
+            <div id="m-a-container" class="separate"></div>
+            <input class="btn btn-primary separate" type="submit" value="Calcular">
+        </form>
+    </div>
+
+
+</body>
+
+</html>

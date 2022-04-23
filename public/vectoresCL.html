@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <script src="js/form-handler.js"></script>
+
+    <title>Resolucion sistemas lineales</title>
+</head>
+
+<body class>
+
+    <div class="container" style="margin-top: 1rem;">
+
+        <div class="row">
+            <h2>Combinaciones lineales de vectores</h2>
+
+            <p>Este es el programa que calcula si un conjunto de vectores generan R<sup>n</sup>&nbsp;, son linealmente independientes y si son base</p>
+            <p>También para ver si u es una combinacion lineal de los vectores</p>
+        </div>
+
+        <div class="row">
+            <form id="form-control-vec">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="ecuations-label">Numero de vectores</span>
+                    <input class="form-control" id="form-cols-vec" type="number" min="1" max="10" value="3" aria-describedby="ecuations-label">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="variables-label">Tamaño de los vectores</span>
+                    <input class="form-control" id="form-rows-vec" type="number" min="1" max="10" value="3" aria-describedby="variable-label">
+                </div>
+                <input class="btn btn-primary" type="submit" value="Actualizar">
+            </form>
+        </div>
+
+        <form method="post" action="calculateVectors" class="row" id="form-container" style="margin-top: 2rem;">
+            <div id="m-vec-container" class="separate"></div>
+            <input class="btn btn-primary separate" type="submit" value="Calcular">
+        </form>
+
+    </div>
+
+
+</body>
+
+</html>
