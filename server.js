@@ -161,63 +161,64 @@ app.post('/calculate1', (req, res) => {
 app.post('/calculateVectors', (req, res) => {
     console.log(req.body);
 
-    let vec = matrixHandler.CreateIfValid(req.body, 'vec', true, basic); // VEC SYSTEM
-    if (!vec.isCorrect) { res.redirect('/'); return; }
-    solver.diagonalize(vec, true);
-    let vecSys = vec.systematize();
+    try {
+        let vec = matrixHandler.CreateIfValid(req.body, 'vec', true, basic); // VEC SYSTEM
+        if (!vec.isCorrect) { res.redirect('/'); return; }
+        solver.diagonalize(vec, true);
+        let vecSys = vec.systematize();
 
-    let rn = { ...req.body }; // VEC SYSTEM FOR X, Y, Z, ...
-    let li = { ...req.body };
+        let rn = { ...req.body }; // VEC SYSTEM FOR X, Y, Z, ...
+        let li = { ...req.body };
 
-    for (let i = 0; i < rn['n-rows-vec']; i++) {
-        rn[`vec-${i}-${Number(rn['n-cols-vec']) - 1}`] = `x_${i + 1}`;
-        li[`vec-${i}-${Number(rn['n-cols-vec']) - 1}`] = `0`;
-    }
+        for (let i = 0; i < rn['n-rows-vec']; i++) {
+            rn[`vec-${i}-${Number(rn['n-cols-vec']) - 1}`] = `x_${i + 1}`;
+            li[`vec-${i}-${Number(rn['n-cols-vec']) - 1}`] = `0`;
+        }
 
-    let R = matrixHandler.CreateIfValid(rn, 'vec', true, basic); // R^n
-    solver.diagonalize(R, true);
-    let Rsys = R.systematize();
+        let R = matrixHandler.CreateIfValid(rn, 'vec', true, basic); // R^n
+        solver.diagonalize(R, true);
+        let Rsys = R.systematize();
 
-    let L = matrixHandler.CreateIfValid(li, 'vec', true, basic); // R^n
-    solver.diagonalize(L, true);
-    let Lsys = L.systematize();
+        let L = matrixHandler.CreateIfValid(li, 'vec', true, basic); // R^n
+        solver.diagonalize(L, true);
+        let Lsys = L.systematize();
 
-    let solus = vecSys.getSolutions();
-    let gen = Rsys.getSolutions();
-    let ind = Lsys.getSolutions();
+        let solus = vecSys.getSolutions();
+        let gen = Rsys.getSolutions();
+        let ind = Lsys.getSolutions();
 
-    let u = basic.zero;
-    let w = basic.zero;
-    let z = basic.zero;
+        let u = basic.zero;
+        let w = basic.zero;
+        let z = basic.zero;
 
-    solus.forEach((sol, i) => {
-        u = basic.add(u, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
-    });
+        solus.forEach((sol, i) => {
+            u = basic.add(u, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+        });
 
-    gen.forEach((sol, i) => {
-        w = basic.add(w, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
-    });
+        gen.forEach((sol, i) => {
+            w = basic.add(w, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+        });
 
-    ind.forEach((sol, i) => {
-        z = basic.add(z, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
-    });
+        ind.forEach((sol, i) => {
+            z = basic.add(z, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+        });
 
-    let liStr = `<p>Los vectores son linealmente independientes</p>`;
-    let RnStr = `<p>Los vectores generan a R<sup>n</sup></p>`;
-    let base =  `<p>Los vectores son base de R<sup>n</sup></p>`;
+        let liStr = `<p>Los vectores son linealmente independientes</p>`;
+        let RnStr = `<p>Los vectores generan a R<sup>n</sup></p>`;
+        let base = `<p>Los vectores son base de R<sup>n</sup></p>`;
 
-    if (!basic.equals(z, basic.zero)) {
-        liStr = `<p>Los vectores NO son linealmente independientes</p>`;
-        base =  `<p>Los vectores NO son base de R<sup>n</sup></p>`;
-    }
+        if (!basic.equals(z, basic.zero)) {
+            liStr = `<p>Los vectores NO son linealmente independientes</p>`;
+            base = `<p>Los vectores NO son base de R<sup>n</sup></p>`;
+        }
 
-    if (gen.length == 0 ) {
-        RnStr = `<p>Los vectores NO son linealmente independientes</p>`;
-        base =  `<p>Los vectores NO son base de R<sup>n</sup></p>`;
-    }
+        if (gen.length == 0) {
+            RnStr = `<p>Los vectores NO son linealmente independientes</p>`;
+            base = `<p>Los vectores NO son base de R<sup>n</sup></p>`;
+        }
 
 
-    res.send(`<!DOCTYPE html>
+        res.send(`<!DOCTYPE html>
         <html lang="es">
 
         <head>
@@ -271,7 +272,7 @@ app.post('/calculateVectors', (req, res) => {
                     \\[u=${u.toTeX()}\\]
                 </div>`
 
-                }
+            }
             </div>
 
             <div class="row row-cols-auto">
@@ -284,15 +285,15 @@ app.post('/calculateVectors', (req, res) => {
 
                 ${gen.length == 0 ?
 
-                    `<div class="col" style="margin-top: 1rem;">
+                `<div class="col" style="margin-top: 1rem;">
                         El conjunto no genera a R<sup>n</sup>
                     </div>`:
 
-                    `<div class="col" style="margin-top: 1rem;">
+                `<div class="col" style="margin-top: 1rem;">
                         \\[R^{n}=${w.toTeX()}\\]
                     </div>`
 
-                }
+            }
             </div>
 
             <div class="row row-cols-auto">
@@ -305,13 +306,13 @@ app.post('/calculateVectors', (req, res) => {
 
                 ${basic.equals(z, basic.zero) ?
 
-                    `
+                `
                     <div class="col" style="margin-top: 1rem;">
                         Sólo se puede obtener 0 si todas las constantes son 0
                         Los vectores son linealmente independientes
                     </div>`:
 
-            `
+                `
                     <div class="col" style="margin-top: 1rem;">
                         Los vectores NO son linealmente independientes, se puede obtener el vector 0 de la siguiente manera:
                     </div>
@@ -319,7 +320,7 @@ app.post('/calculateVectors', (req, res) => {
                         \\[\\vec{0}=${z.toTeX()}\\]
                     </div>`
 
-                }
+            }
             </div>
 
             <div class="row row-cols-auto">
@@ -364,6 +365,22 @@ app.post('/calculateVectors', (req, res) => {
 
         </html>
     `);
+    } catch (error) {
+        res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <h1>Ecuación muy grande para manejar</h1>
+        </body>
+        </html>
+        `);
+    }
 });
 
 server.listen(port, function () {
