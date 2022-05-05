@@ -17,12 +17,12 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'));
 
 // PORT FOR LISTENING
-const port = process.env.PORT || 3000; // FOR HEROKU
-//const port = 25565; // FOR TESTING
+//const port = process.env.PORT || 3000; // FOR HEROKU
+const port = 25565; // FOR TESTING
 
 app.post('/calculateSystem', (req, res) => {
     //console.log(req.body);
-    let a = matrixHandler.CreateIfValid(req.body, 'sys', true);
+    let a = matrixHandler.CreateIfValid(req.body, 'sys', true, true);
     if (!a.isCorrect) { res.redirect('/'); return; }
     //console.log(a);
     solver.diagonalize(a, true);
@@ -37,8 +37,9 @@ app.post('/calculateSystem', (req, res) => {
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
             
-                <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-                <script src="js/jquery.jslatex.js"></script>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+                <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+                <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -49,18 +50,12 @@ app.post('/calculateSystem', (req, res) => {
             </head>
             
             <body>
-                
-                <script>
-                    $(function () {
-                        $(".latex").latex();
-                    });
-                </script>
                 <div class="container" style="margin-top: 1rem;">
             
                     <div class="row">
                         <h2>Respuesta</h2>
                         ${t.getOgSystem()}
-                        <div>${t.getAnswers()}</div>
+                        ${t.getAnswers()}
                     </div>
             
                     <div class="row row-cols-auto"> 
@@ -161,8 +156,8 @@ app.post('/calculate1', (req, res) => {
 app.post('/calculateVectors', (req, res) => {
     console.log(req.body);
 
-    try {
-        let vec = matrixHandler.CreateIfValid(req.body, 'vec', true, basic); // VEC SYSTEM
+    //try {
+        let vec = matrixHandler.CreateIfValid(req.body, 'vec', true, true, basic); // VEC SYSTEM
         if (!vec.isCorrect) { res.redirect('/'); return; }
         solver.diagonalize(vec, true);
         let vecSys = vec.systematize();
@@ -175,11 +170,11 @@ app.post('/calculateVectors', (req, res) => {
             li[`vec-${i}-${Number(rn['n-cols-vec']) - 1}`] = `0`;
         }
 
-        let R = matrixHandler.CreateIfValid(rn, 'vec', true, basic); // R^n
+        let R = matrixHandler.CreateIfValid(rn, 'vec', true, true, basic); // R^n
         solver.diagonalize(R, true);
         let Rsys = R.systematize();
 
-        let L = matrixHandler.CreateIfValid(li, 'vec', true, basic); // R^n
+        let L = matrixHandler.CreateIfValid(li, 'vec', true, true, basic); // R^n
         solver.diagonalize(L, true);
         let Lsys = L.systematize();
 
@@ -192,15 +187,15 @@ app.post('/calculateVectors', (req, res) => {
         let z = basic.zero;
 
         solus.forEach((sol, i) => {
-            u = basic.add(u, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+            u = basic.add(u, basic.multiply(sol, basic.parseAndSimp(`v_${vec.subs[i]}`)));
         });
 
         gen.forEach((sol, i) => {
-            w = basic.add(w, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+            w = basic.add(w, basic.multiply(sol, basic.parseAndSimp(`v_${R.subs[i]}`)));
         });
 
         ind.forEach((sol, i) => {
-            z = basic.add(z, basic.multiply(sol, basic.parseAndSimp(`v_${i + 1}`)));
+            z = basic.add(z, basic.multiply(sol, basic.parseAndSimp(`v_${L.subs[i]}`)));
         });
 
         let liStr = `<p>Los vectores son linealmente independientes</p>`;
@@ -227,8 +222,8 @@ app.post('/calculateVectors', (req, res) => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -365,7 +360,7 @@ app.post('/calculateVectors', (req, res) => {
 
         </html>
     `);
-    } catch (error) {
+    /*} catch (error) {
         res.send(`
         <!DOCTYPE html>
         <html lang="en">
@@ -380,7 +375,7 @@ app.post('/calculateVectors', (req, res) => {
         </body>
         </html>
         `);
-    }
+    }*/
 });
 
 server.listen(port, function () {

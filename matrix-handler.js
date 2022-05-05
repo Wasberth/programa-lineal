@@ -47,10 +47,10 @@ function matrixDot(A, B) {
                     return A.basic.add(sum, A.basic.multiply(elm, B.mc.matrix[k][j]), 0);
                 })
             });
-        }), false, A.basic);
+        }), false, false, A.basic);
 }
 
-function validateJSON(json, mN, canDeleteZeros = false, basic = require('./nerd')) {
+function validateJSON(json, mN, canDeleteZeros = false, isReshapable, basic = require('./nerd')) {
     console.log(json);
     let nRow = json[`n-rows-${mN}`]; // Number of ecuations
     let nCol = json[`n-cols-${mN}`]; // Number of variables
@@ -80,10 +80,10 @@ function validateJSON(json, mN, canDeleteZeros = false, basic = require('./nerd'
         }
     }
 
-    return createMc(nRow, nCol, matrix, canDeleteZeros, basic);
+    return createMc(nRow, nCol, matrix, canDeleteZeros, isReshapable, basic);
 }
 
-function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('./nerd')) {
+function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = false, basic = require('./nerd')) {
     function shiftRows(mc, row1, row2) {
         console.log('SHIFT ROWS');
         for (let i = 0; i < mc.nCol; i++) {
@@ -97,6 +97,19 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
             mc.matrix[row2][i] = math.simplify(temp);
             */
         }
+    }
+
+    function shiftCols(mc, col1, col2) {
+        console.log('SHIFT COLS');
+        for (let i = 0; i < mc.nRow; i++) {
+            let temp = mc.matrix[i][col1];
+            mc.matrix[i][col1] = mc.matrix[i][col2];
+            mc.matrix[i][col2] = temp;
+        }
+
+        let su = subs[col1];
+        subs[col1] = subs[col2];
+        subs[col2] = su;
     }
 
     function subtractRows(mc, affRow, affRowCoeff, subRow, subRowCoeff) {
@@ -119,6 +132,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
     console.log('create mc');
     let ogMatrix = Array(nRow).fill().map(() => Array(nCol).fill());
     let cMatrix = Array(nRow).fill().map(() => Array(nCol).fill());
+    let subs = [];
 
     for (let i = 0; i < nRow; i++) {
         for (let j = 0; j < nCol; j++) {
@@ -127,11 +141,16 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
         }
     }
 
+    for (let i = 0; i < nCol - 1; i++) {
+        subs[i] = i + 1;
+    }
+
     return {
         isCorrect: true,
         mc: { nRow: nRow, nCol: nCol, matrix: cMatrix },
         ogMatrix: ogMatrix,
         balances: [], // Factors to get same det value after operation
+        subs: subs,
         basic: basic,
 
         shiftRows: function (rowA, rowB) {
@@ -322,7 +341,45 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
                 this.multiplyRow(i, basic.reciprocal(g));
             }
 
-            this.appendStepValidate()
+            this.appendStepValidate();
+
+            for (let i = 0; i < this.mc.nRow; i++) {
+                let s = "";
+                for (let j = 0; j < this.mc.nCol; j++) {
+                    s = s + this.mc.matrix[i][j].toString() + " ";
+                }
+                console.log(s);
+            }
+
+            console.log('reshapable: ' + isReshapable);
+
+            if (isReshapable) {
+                console.log(this.mc.nCol + ">" + this.mc.nRow + "?" + (this.mc.nCol > this.mc.nRow));
+
+                let longes =
+                    this.mc.nCol > this.mc.nRow ? this.mc.nRow :
+                        this.mc.nCol - 1;
+
+                console.log('LONGES: ' + longes);
+
+                for (let i = 0; i < longes; i++) {
+                    console.log(this.mc.matrix[i][i].toString());
+                    if (basic.equals(this.mc.matrix[i][i], basic.zero)) {
+                        console.log('MUST SHIFT');
+                        for (let j = i; j < nCol - 1; j++) {
+                            console.log(this.mc.matrix[i][j].toString());
+                            if (!basic.equals(this.mc.matrix[i][j], basic.zero)) {
+                                console.log('SHIFTING');
+                                this.addT(`C<sub>${i + 1}</sub>&nbsp;&harr;&nbsp;C<sub>${j + 1}</sub><br>`);
+                                shiftCols(this.mc, i, j);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            this.appendStepValidate();
         },
 
         steps: "",
@@ -431,6 +488,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
             let rangeAumMatrix = this.calculateRange();
             console.log('R(A) = ' + rangeMatrix + ' R(A*) = ' + rangeAumMatrix);
             let mc = this.mc
+            let subs = this.subs;
 
             function getOgSystem(addSolv = true, letter = 'x') {
                 let s = "<p >";
@@ -475,11 +533,11 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
                 hasSolutions--;
 
                 if (!hasSolutions) {
-                    let aMsg = "<p>El sistema tiene infinitas soluciones, representadas de la siguiente manera:</p>";
+                    let aMsg = "<p>El sistema tiene infinidad de soluciones, representadas de la siguiente manera:</p>";
 
                     for (let ec = 0; ec < mc.nRow; ec++) {
 
-                        aMsg = aMsg + `<div class="latex" style="margin-top:5px">x_{${ec + 1}}=`;
+                        aMsg = aMsg + `\\[x_{${subs[ec]}}=`;
                         let sol = mc.matrix[ec][mc.nCol - 1];
                         //aMsg = aMsg + `x<sub>${ec + 1}</sub>&nbsp;=&nbsp;(${mc.matrix[ec][mc.nCol - 1]}&nbsp;`;
 
@@ -487,7 +545,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
                         console.log('FVQ: ' + freeVarQ);
 
                         for (let i = 0; i < freeVarQ; i++) {
-                            let sub = i + 1;
+                            let sub = subs[i];
                             let freeVarI = mc.nCol - i - 2;
 
                             sol = basic.subtract(sol, basic.multiply(mc.matrix[ec][freeVarI], basic.parseAndSimp(`lambda_${sub}`)));
@@ -495,13 +553,13 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
                         }
 
                         sol = basic.divide(sol, mc.matrix[ec][ec]);
-                        aMsg = aMsg + sol.toTeX() + "</div>";
+                        aMsg = aMsg + sol.toTeX() + "\\]";
                         //aMsg = aMsg + `)&nbsp;/&nbsp;${mc.matrix[ec][ec]}<br>`;
                     }
 
                     let j = mc.nCol - mc.nRow - 1;
                     for (let missVar = mc.nRow; missVar < mc.nCol - 1; missVar++) {
-                        aMsg = aMsg + `<div class="latex">x_{${missVar + 1}}=\\lambda_{${j}}</div>`;
+                        aMsg = aMsg + `\\[x_{${subs[missVar]}}=\\lambda_{${j}}\\]`;
                         //aMsg = aMsg + `x<sub>${missVar + 1}</sub>&nbsp;=&nbsp;&lambda;<sub>${j}</sub><br>`;
                         j--;
                     }
@@ -515,7 +573,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, basic = require('.
                     let numerator = mc.matrix[ec][mc.nCol - 1];
                     let denominator = mc.matrix[ec][ec];
 
-                    bMsg = bMsg + `<div class="latex">x_{${ec + 1}}=${basic.divide(numerator, denominator).toTeX()}</div><br>`;
+                    bMsg = bMsg + `\\[x_{${subs[ec]}}=${basic.divide(numerator, denominator).toTeX()}\\]<br>`;
                 }
 
                 return bMsg;
