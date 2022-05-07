@@ -17,8 +17,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'));
 
 // PORT FOR LISTENING
-//const port = process.env.PORT || 3000; // FOR HEROKU
-const port = 25565; // FOR TESTING
+const port = process.env.PORT || 3000; // FOR HEROKU
+//const port = 25565; // FOR TESTING
 
 app.post('/calculateSystem', (req, res) => {
     //console.log(req.body);
