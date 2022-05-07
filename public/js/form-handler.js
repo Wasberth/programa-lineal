@@ -85,6 +85,31 @@ function editVecForm() {
     return false;
 }
 
+function fillRandom(mN, max, min) {
+    let rows = document.getElementById(`form-rows-${mN}`).value; // NUMBER OF ROWS
+
+    let fC = document.getElementById(`form-cols-${mN}`);
+
+    let cols = fC ? document.getElementById(`form-cols-${mN}`).value : rows; // NUMBER OF COLS
+
+    if (mN == 'sys') {
+        cols++;
+    }
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            let e = document.getElementsByName(`${mN}-${i}-${j}`);
+            if (e) {
+                e = e[0];
+            }
+
+            if (e) {
+                e.value = Math.floor(Math.random() * (max - min)) + min;
+            }
+        }        
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     //document.getElementById('form-control-a').onsubmit = function() { return editForm('a') };
 
@@ -101,5 +126,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let vec = document.getElementById('form-control-vec');
     if (vec) {
         vec.onsubmit = function () { return editVecForm() };
+    }
+
+    let h = document.getElementById('form-control-h');
+    if (h) {
+        h.onsubmit = function () { return editForm('h') };
     }
 });

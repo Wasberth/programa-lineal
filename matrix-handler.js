@@ -50,7 +50,7 @@ function matrixDot(A, B) {
         }), false, false, A.basic);
 }
 
-function validateJSON(json, mN, canDeleteZeros = false, isReshapable, basic = require('./nerd')) {
+function validateJSON(json, mN, canDeleteZeros = false, isReshapable = false, basic = require('./nerd')) {
     console.log(json);
     let nRow = json[`n-rows-${mN}`]; // Number of ecuations
     let nCol = json[`n-cols-${mN}`]; // Number of variables
@@ -487,8 +487,16 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
             let rangeMatrix = this.calculateRangeS();
             let rangeAumMatrix = this.calculateRange();
             console.log('R(A) = ' + rangeMatrix + ' R(A*) = ' + rangeAumMatrix);
-            let mc = this.mc
+            let mc = this.mc;
+            let ogM = this.ogMatrix;
             let subs = this.subs;
+
+            function bitCount32(n) {
+                n = n - ((n >> 1) & 0x55555555)
+                n = (n & 0x33333333) + ((n >> 2) & 0x33333333)
+                return ((n + (n >> 4) & 0xF0F0F0F) * 0x1010101) >> 24
+            }
+
 
             function getOgSystem(addSolv = true, letter = 'x') {
                 let s = "<p >";
@@ -638,10 +646,199 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
                 return solus;
             }
 
+            function getFrees() {
+                let hasSolutions = calculateStatus();
+                let frees = [];
+
+                if (!hasSolutions) {
+                    return frees;
+                }
+
+                hasSolutions--;
+
+                console.log('FREES:');
+                for (let i = 0; i < mc.nRow; i++) {
+                    let s = "";
+
+                    for (let j = 0; j < mc.nCol; j++) {
+                        s = `${s + mc.matrix[i][j].toString()}\t`;
+                    }
+
+                    console.log(s);
+                }
+
+                if (!hasSolutions) {
+
+                    for (let ec = 0; ec < mc.nRow; ec++) {
+                        let freeI = [];
+
+                        const freeVarQ = mc.nCol - mc.nRow - 1;
+                        for (let i = 0; i < freeVarQ; i++) {
+                            let freeVarI = mc.nCol - i - 2;
+
+                            freeI[i] = mc.matrix[ec][freeVarI];
+                        }
+
+                        frees.push({
+                            coeff: mc.matrix[ec][ec],
+                            freeI: freeI
+                        });
+                    }
+
+                    return frees;
+                }
+
+                for (let ec = 0; ec < mc.nRow; ec++) {
+                    frees.push({
+                        coeff: mc.matrix[ec][ec],
+                        freeI: []
+                    });
+                }
+
+                return frees;
+            }
+
+            function getFreeQuant() {
+                return mc.nCol - mc.nRow - 1;
+            }
+
+            //Asumiendo que el sistema es homogeneo
+            function getNull() {
+                if (calculateStatus() == 2) {
+                    return "{<strong>0</strong>}";
+                }
+
+                let s = "<";
+                const freeQ = getFreeQuant();
+                const frees = getFrees();
+
+                let facs = [];
+                let lcm = frees[0].coeff;
+
+                for (let j = 1; j < mc.nCol - freeQ - 1; j++) {
+                    lcm = basic.lcm(lcm, frees[j].coeff);
+                }
+
+                console.log("FREE LCM: " + lcm);
+
+                for (let j = 0; j < mc.nCol - freeQ - 1; j++) {
+                    facs[j] = basic.divide(lcm, frees[j].coeff);
+                }
+
+                for (let i = 0; i < freeQ; i++) {
+                    s = s + "(";
+
+                    for (let j = 0; j < mc.nCol - freeQ - 1; j++) {
+                        s = s + basic.multiply(basic.negate(frees[j].freeI[i]), facs[j]).toString() + ", ";
+                    }
+
+                    for (let j = 0; j < freeQ; j++) {
+                        let l = basic.zero;
+
+                        if (j == freeQ - 1 - i) {
+                            l = basic.one;
+                        }
+
+                        s = s + basic.multiply(l, lcm).toString();
+
+                        if (j != freeQ - 1) {
+                            s = s + ", ";
+                        }
+                    }
+
+                    s = s + ")";
+
+                    if (i != freeQ - 1) {
+                        s = s + ", ";
+                    }
+                }
+                s = s + ">";
+                return s;
+            }
+
+            function getIm() {
+                let v = "";
+                let steps = "";
+
+                for (let i = 0; i < Math.pow(2, mc.nCol - 1); i++) {
+                    if (bitCount32(i) != rangeMatrix) {
+                        continue;
+                    }
+                    let vr = "<";
+
+                    let c = 0;
+
+                    let vVecs = Array(mc.nRow).fill().map(() => Array(rangeMatrix + 1).fill(0));
+                    console.log(vVecs);
+
+                    for (let k = 0; k < mc.nCol; k++) {
+                        console.log(i.toString(2) + ", " + (i.toString(2).charAt(k) == 1));
+
+                        if (i.toString(2).charAt(k) == 1) {
+                            vr = vr + "("
+                            for (let l = 0; l < mc.nRow; l++) {
+                                vVecs[l][c] = ogM[l][k];
+                                vr = vr + ogM[l][k];
+
+                                if (l !== mc.nRow - 1) {
+                                    vr = vr + ", ";
+                                }
+                            }
+                            vr = vr + ")";
+                            c++;
+
+                            if (c !== rangeMatrix) {
+                                vr = vr + ", ";
+                            }
+                        }
+                    }
+
+                    vr = vr + ">";
+
+                    let vecsMC = createMc(mc.nRow, rangeMatrix + 1, vVecs, true, true, basic);
+                    solver.diagonalize(vecsMC, true);
+                    let vecsSys = vecsMC.systematize();
+
+                    steps = steps +
+                        `<div class="col" style="text-align: center; margin-top: 1rem;">
+                            Checando si {${vr.substring(1, vr.length - 1)}} son linealmente independientes
+                        </div>
+                        <div class="col" style="margin-top: 1rem;">
+                            ${vecsSys.getOgSystem(false)}
+                        </div>
+                        ${vecsMC.getOriginalHtml()}
+                        ${vecsMC.getHtml()}`;
+
+                    console.log("STATUS: " + vecsSys.getStatus());
+
+                    if (vecsSys.getStatus() === 2) {
+                        v = vr;
+                        steps = steps +
+                            `<div class="col" style="text-align: center; margin-top: 1rem;">
+                                Sí son linealmente independientes
+                            </div>`;
+                        break;
+                    }
+
+                    steps = steps +
+                        `<div class="col" style="text-align: center; margin-top: 1rem;">
+                            No son linealmente independientes
+                        </div>`;
+
+                }
+
+                return { gen: v, steps: steps};
+            }
+
             return {
                 getOgSystem: getOgSystem,
                 getAnswers: getAnswers,
-                getSolutions: getSolutions
+                getSolutions: getSolutions,
+                getFrees: getFrees,
+                getFreeQuant: getFreeQuant,
+                getStatus: calculateStatus,
+                getNull: getNull,
+                getIm: getIm
             };
         }
     };
