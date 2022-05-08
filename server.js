@@ -584,7 +584,7 @@ app.post('/baseChan', (req, res) => {
         <div class="container" style="margin-top: 1rem;">
 
             <div class="row row-cols-auto">
-                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b2.getBaseHtml('\\beta_{1}')}\\]</div>
+                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b2.getBaseHtml('\\beta_{2}')}\\]</div>
                 <div class="col" style="text-align: center; margin-top: 1rem;"><p style="margin-top: 15%">No es una base</p></div>
             </div>
 
