@@ -449,6 +449,10 @@ app.post('/calculate2', (req, res) => {
                 <div class="col" style="text-align: center; margin-top: 1rem;">Im(A) = </div>
                 <div class="col" style="text-align: center; margin-top: 1rem;">${Im.gen}</div>
             </div>
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Dim(Im(A)) = </div>
+                <div class="col" style="text-align: center; margin-top: 1rem;">${Im.dim}</div>
+            </div>
 
 
             <div class="row row-cols-auto">
@@ -469,6 +473,302 @@ app.post('/calculate2', (req, res) => {
             </div>
 
             
+
+        </div>
+        </body>
+
+        </html>
+    `);
+});
+
+app.post('/baseChan', (req, res) => {
+    console.log(req.body);
+    let validate = { ...req.body };
+    const siz = Number(validate['n-rows-vecb']);
+    console.log(siz);
+
+    for (let i = 0; i < siz; i++) {
+        validate[`vecb-${i}-${siz}`] = `0`;
+        validate[`vecb2-${i}-${siz}`] = `0`;
+    }
+
+    validate['n-cols-vecb'] = siz + 1;
+    validate['n-cols-vecb2'] = validate['n-cols-vecb'];
+
+    let b1 = matrixHandler.CreateIfValid(validate, 'vecb', true, true, basic);
+    solver.diagonalize(b1, true);
+    let b1Sys = b1.systematize();
+
+    let b2 = matrixHandler.CreateIfValid(validate, 'vecb2', true, true, basic);
+    solver.diagonalize(b2, true);
+    let b2Sys = b2.systematize();
+
+    if (b1Sys.getStatus() !== 2) {
+        res.send(`<!DOCTYPE html>
+        <html lang="es">
+
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+        <link rel="stylesheet" href="css/matrix.css">
+
+        <title>Document</title>
+        </head>
+
+        <body>
+
+        <style>
+        .separate {
+            margin-bottom: 5px;
+        }
+        </style>
+
+        <div class="container" style="margin-top: 1rem;">
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b1.getBaseHtml('\\beta_{1}')}\\]</div>
+                <div class="col" style="text-align: center; margin-top: 1rem;"><p style="margin-top: 15%">No es una base</p></div>
+            </div>
+
+            <div class="row row-cols-auto">
+                ${b1.getOriginalHtml()}
+                ${b1.getHtml()}
+            </div>
+
+        </div>
+        </body>
+
+        </html>
+        `);
+        return;
+    }
+
+    if (b2Sys.getStatus() !== 2) {
+        res.send(`<!DOCTYPE html>
+        <html lang="es">
+
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+        <link rel="stylesheet" href="css/matrix.css">
+
+        <title>Document</title>
+        </head>
+
+        <body>
+
+        <style>
+        .separate {
+            margin-bottom: 5px;
+        }
+        </style>
+
+        <div class="container" style="margin-top: 1rem;">
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b2.getBaseHtml('\\beta_{1}')}\\]</div>
+                <div class="col" style="text-align: center; margin-top: 1rem;"><p style="margin-top: 15%">No es una base</p></div>
+            </div>
+
+            <div class="row row-cols-auto">
+                ${b2.getOriginalHtml()}
+                ${b2.getHtml()}
+            </div>
+
+        </div>
+        </body>
+
+        </html>
+        `);
+        return;
+    }
+
+    let canB = Array(siz).fill();
+    let transMatrix = Array(siz).fill();
+    let steps0 = "";
+    let steps = "";
+
+    for (let colVec = 0; colVec < siz; colVec++) {
+        let ma = { ...req.body };
+        let me = { ...req.body };
+        for (let i = 0; i < siz; i++) {
+            ma[`vecb2-${i}-${siz}`] = req.body[`vecb-${i}-${colVec}`];
+            me[`vecb-${i}-${siz}`] = 0;
+            if (colVec === i) {
+                me[`vecb-${i}-${siz}`] = 1;
+            }
+        }
+        me[`n-cols-vecb`] = Number(me[`n-cols-vecb`]) + 1;
+
+        let md = matrixHandler.CreateIfValid(me, 'vecb', true, true, basic);
+        solver.diagonalize(md, true);
+        let mds = md.systematize();
+        canB[colVec] = mds.getSolutions();
+
+        steps0 = steps0 + `
+        <div class="row row-cols-auto">
+            <div class="col" style="text-align: center; margin-top: 1rem;">Vector ${colVec + 1}</div>
+            <div class="col" style="margin-top: 1rem;">
+                ${mds.getOgSystem(false)}
+            </div>
+            ${md.getOriginalHtml()}
+            ${md.getHtml()}
+        </div>
+        <div class="row row-cols-auto">
+            ${mds.getAnswers()}
+        </div>
+        `;
+
+        let ms = matrixHandler.CreateIfValid(ma, 'vecb2', true, true, basic);
+        solver.diagonalize(ms, true);
+        let mss = ms.systematize();
+        transMatrix[colVec] = mss.getSolutions();
+
+        steps = steps + `
+        <div class="row row-cols-auto">
+            <div class="col" style="text-align: center; margin-top: 1rem;">Vector ${colVec + 1}</div>
+            <div class="col" style="margin-top: 1rem;">
+                ${mss.getOgSystem(false)}
+            </div>
+            ${ms.getOriginalHtml()}
+            ${ms.getHtml()}
+        </div> 
+        <div class="row row-cols-auto">
+            ${mss.getAnswers()}
+        </div>
+        `;
+    }
+
+    console.log(transMatrix);
+
+    let canMC = matrixHandler.createMatrixControl(canB.length, canB[0].length, canB);
+    let tCanMC = canMC.getT();
+
+    let transMC = matrixHandler.createMatrixControl(transMatrix.length, transMatrix[0].length, transMatrix);
+    let tTransMC = transMC.getT();
+
+    let canVec = [];
+    for (let i = 0; i < siz; i++) {
+        canVec.push([req.body[`vecb2-${i}-${siz}`]]);
+    }
+
+    let canVecMC = matrixHandler.createMatrixControl(canVec.length, 1, canVec);
+    let vecB = matrixHandler.matrixDot(tCanMC, canVecMC);
+    let vecB2 = matrixHandler.matrixDot(tTransMC, vecB);
+
+    //console.log(Im);
+
+    res.send(`<!DOCTYPE html>
+        <html lang="es">
+
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+        <link rel="stylesheet" href="css/matrix.css">
+
+        <title>Document</title>
+        </head>
+
+        <body>
+
+        <style>
+        .separate {
+            margin-bottom: 5px;
+        }
+        </style>
+
+        <div class="container" style="margin-top: 1rem;">
+
+            <div class="row">
+                <h2>Cambios de base</h2>
+
+                <p>Aquí se encuentra el vector ingresado en las otras bases, la matríz para convertir de base canónica a &beta;<sub>1</sub>&nbsp;y de &beta;<sub>1</sub>&nbsp;a&nbsp;&beta;<sub>2</sub></p>
+                
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b1.getBaseHtml('\\beta_{1}')}\\]</div>
+                <div class="col" style="text-align: center; margin-top: 1rem;"><p style="margin-top: 15%">Es una base</p></div>
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">\\[${b2.getBaseHtml('\\beta_{2}')}\\]</div>
+                <div class="col" style="text-align: center; margin-top: 1rem;"><p style="margin-top: 15%">Es una base</p></div>
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Matriz transformadora Canónica&nbsp;&rarr;&nbsp;&beta;<sub>1</sub>&nbsp;=&nbsp;</div>
+                ${tCanMC.getOriginalHtml()}
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Matriz transformadora &beta;<sub>1</sub>&nbsp;&rarr;&nbsp;&beta;<sub>2</sub>&nbsp;=&nbsp;</div>
+                ${tTransMC.getOriginalHtml()}
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Vector canónico</div>
+                ${canVecMC.getOriginalHtml()}
+                <div class="col" style="text-align: center; margin-top: 1rem;">Vector en la base &beta;<sub>1</sub></div>
+                ${vecB.getOriginalHtml()}
+                <div class="col" style="text-align: center; margin-top: 1rem;">Vector en la base &beta;<sub>2</sub></div>
+                ${vecB2.getOriginalHtml()}
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Verificando base 1:</div>
+                <div class="col" style="margin-top: 1rem;">
+                    ${b1Sys.getOgSystem(false)}
+                </div>
+                ${b1.getOriginalHtml()}
+                ${b1.getHtml()}
+            </div>
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Verificando base 2:</div>
+                <div class="col" style="margin-top: 1rem;">
+                    ${b2Sys.getOgSystem(false)}
+                </div>
+                ${b2.getOriginalHtml()}
+                ${b2.getHtml()}
+            </div>
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Pasos matriz transformadora Canónica&nbsp;&rarr;&nbsp;&beta;<sub>2</sub></div>
+            </div>
+            ${steps0}
+
+            <div class="row row-cols-auto">
+                <div class="col" style="text-align: center; margin-top: 1rem;">Pasos matriz transformadora &beta;<sub>1</sub>&nbsp;&rarr;&nbsp;&beta;<sub>2</sub></div>
+            </div>
+            ${steps}
+                  
 
         </div>
         </body>

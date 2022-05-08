@@ -5,7 +5,7 @@ function editForm(mN) {
 
     let fC = document.getElementById(`form-cols-${mN}`);
 
-    let cols = fC ? document.getElementById(`form-cols-${mN}`).value : rows; // NUMBER OF COLS
+    let cols = fC ? fC.value : rows; // NUMBER OF COLS
 
     if (mN == 'sys') {
         cols++;
@@ -45,18 +45,20 @@ function editForm(mN) {
     return false;
 };
 
-function editVecForm() {
+function editVecForm(mN = 'vec', nam = 'v', appU = true, namU = 'u') {
     console.log('vec');
 
-    let rows = Number(document.getElementById(`form-rows-vec`).value); // NUMBER OF ROWS
-    let cols = Number(document.getElementById(`form-cols-vec`).value); // NUMBER OF COLS
+    let rows = Number(document.getElementById(`form-rows-${mN}`).value); // NUMBER OF ROWS
+    let fC = document.getElementById(`form-cols-${mN}`);
+
+    let cols = fC ? Number(document.getElementById(`form-cols-${mN}`).value) : rows; // NUMBER OF COLS
 
     // FORM FOR SYSTEM INPUT
-    let html = `<input name="n-rows-vec" type="hidden" value="${rows}">` + // HIDDEN N-ROWS & N-COLS
-        `<input name="n-cols-vec" type="hidden" value="${cols + 1}">`;
+    let html = `<input name="n-rows-${mN}" type="hidden" value="${rows}">` + // HIDDEN N-ROWS & N-COLS
+        `<input name="n-cols-${mN}" type="hidden" value="${cols + (appU ? 1 : 0)}">`;
     //`<table style="width:100%;"><tbody>`;
 
-    for (let i = 0; i < cols + 1; i++) {
+    for (let i = 0; i < cols + (appU ? 1 : 0); i++) {
         //html = html + `<tr class="form-group form-inline" style="width:100%;"><td>`;
         html = html + '<div class="input-group mb-3">';
         for (let j = 0; j < rows; j++) {
@@ -64,23 +66,23 @@ function editVecForm() {
             let l = "";
 
             if (j == 0) {
-                t = `<span class="input-group-text" id="label-v-${i}">v<sub>${i + 1}</sub>&nbsp;=&nbsp;</span>` // v_i =
-                l = `aria-describedby="label-v-${i}"`; // ASSOCIATE INPUT WITH DESC
+                t = `<span class="input-group-text" id="label-${nam}-${i}">${nam}<sub>${i + 1}</sub>&nbsp;=&nbsp;</span>` // v_i =
+                l = `aria-describedby="label-${nam}-${i}"`; // ASSOCIATE INPUT WITH DESC
             }
 
             if (i == cols && j == 0) {
-                t = `<span class="input-group-text" id="label-v-${i}">u&nbsp;=&nbsp;</span>` // u
+                t = `<span class="input-group-text" id="label-${nam}-${i}">${namU}&nbsp;=&nbsp;</span>` // u
             }
 
             html = html + t +
-                `<input name="vec-${j}-${i}" type="text" class="form-control" ${l}>`; // INPUT FOR j i
+                `<input name="${mN}-${j}-${i}" type="text" class="form-control" ${l}>`; // INPUT FOR j i
         }
         html = html + '</div>';
         //html = html + `</td></tr>`;
     }
 
     //html = html + "</table></tbody>";
-    document.getElementById(`m-vec-container`).innerHTML = html; //APPEND
+    document.getElementById(`m-${mN}-container`).innerHTML = html; //APPEND
 
     return false;
 }
@@ -106,7 +108,7 @@ function fillRandom(mN, max, min) {
             if (e) {
                 e.value = Math.floor(Math.random() * (max - min)) + min;
             }
-        }        
+        }
     }
 }
 
@@ -131,5 +133,14 @@ document.addEventListener("DOMContentLoaded", function () {
     let h = document.getElementById('form-control-h');
     if (h) {
         h.onsubmit = function () { return editForm('h') };
+    }
+
+    let vecb = document.getElementById('form-control-vecb');
+    if (vecb) {
+        function reas() {
+            document.getElementById('form-rows-vecb2').value = document.getElementById('form-rows-vecb').value;
+            return false;
+        }
+        vecb.onsubmit = function () { return reas() || editVecForm('vecb', '&beta;1', false) || editVecForm('vecb2', '&beta;2', true, 'canonico') };
     }
 });

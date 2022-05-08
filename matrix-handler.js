@@ -28,26 +28,28 @@ function getSumString(a, basic) {
 
 function matrixDot(A, B) {
     try {
-        if (!A || !B || A.mc.matrix.length === undefined || B.mc.matrix[0].length === undefined ||
-            A.mc.matrix.length !== B.mc.matrix[0].length) {
+        if (!A || !B || A.mc.nCol !== B.mc.nRow) {
             return undefined;
         }
     } catch (error) {
         return undefined;
     }
+    
+    dotproduct = function(s,t) {
+        console.log(s);
+        console.log(t);
+        return s.map(function(x,i) {
+            return A.basic.multiply(s[i], t[i]);
+        }).reduce(function(m,n) { return A.basic.add(m, n); });
+    }
 
-    var result = new Array(A.mc.matrix.length).fill().map(() => new Array(B.mc.matrix[0].length).fill().map(() => A.basic.zero));
+    console.log(B.getT());
 
-    console.log(result);
-
-    return createMc(A.mc.matrix.length, B.mc.matrix[0].length,
-        result.map((row, i) => {
-            return row.map((val, j) => {
-                return A.mc.matrix[i].reduce(function (sum, elm, k) {
-                    return A.basic.add(sum, A.basic.multiply(elm, B.mc.matrix[k][j]), 0);
-                })
-            });
-        }), false, false, A.basic);
+    return createMc(A.mc.nRow, B.mc.nCol, A.mc.matrix.map(function(x,i) {
+        return B.getT().mc.matrix.map(function(y,k) {
+            return dotproduct(x, y)
+        });
+    }));
 }
 
 function validateJSON(json, mN, canDeleteZeros = false, isReshapable = false, basic = require('./nerd')) {
@@ -274,6 +276,18 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
             return { op: op, det: det.toString(), d: det };
         },
 
+        getT: function (canDeletZeros = canDeleteZeros, isReshpable = isReshapable, basc = basic) {
+            let tMatrix = Array(this.mc.nCol).fill().map(() => Array(this.mc.nRow).fill());
+
+            for (let i = 0; i < this.mc.nRow; i++) {
+                for (let j = 0; j < this.mc.nCol; j++) {
+                    tMatrix[j][i] = this.mc.matrix[i][j];
+                }
+            }
+
+            return createMc(this.mc.nCol, this.mc.nRow, tMatrix, canDeletZeros, isReshpable, basc);
+        },
+
         getM: function () {
             console.log('M');
             let M = Array(nRow).fill().map(() => Array(nCol).fill());
@@ -482,6 +496,27 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
             return (m);
         },
+        getBaseHtml: function (name = '\\beta') {
+            let s = name + "=\\{";
+
+            for (let j = 0; j < nCol - 1; j++) {
+                s = s + "(";
+                for (let i = 0; i < nRow; i++) {
+                    s = s + this.ogMatrix[i][j];
+
+                    if (i !== nRow - 1) {
+                        s = s + ", ";
+                    }
+                }
+
+                s = s + ")";
+                if (j !== nCol - 2) {
+                    s = s + ", ";
+                }
+            }
+
+            return s + '\\}';
+        },
 
         systematize: function () {
             let rangeMatrix = this.calculateRangeS();
@@ -622,13 +657,13 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
                         sol = basic.divide(sol, mc.matrix[ec][ec]);
 
-                        solus.push(sol);
+                        solus[subs[ec] - 1] = sol;
                     }
 
                     let j = mc.nCol - mc.nRow - 1;
                     for (let missVar = mc.nRow; missVar < mc.nCol - 1; missVar++) {
                         let sol = basic.parseAndSimp(`lambda_${j}`);
-                        solus.push(sol);
+                        solus[subs[missVar] - 1] = sol;
                         j--;
                     }
 
@@ -640,7 +675,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
                     let denominator = mc.matrix[ec][ec];
 
                     let sol = basic.divide(numerator, denominator);
-                    solus.push(sol);
+                    solus[subs[ec] - 1] = sol;
                 }
 
                 return solus;
@@ -757,6 +792,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
             }
 
             function getIm() {
+                console.log('getIM');
                 let v = "";
                 let steps = "";
 
@@ -768,19 +804,20 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
                     let c = 0;
 
-                    let vVecs = Array(mc.nRow).fill().map(() => Array(rangeMatrix + 1).fill(0));
+                    let vVecs = Array(nRow).fill().map(() => Array(rangeMatrix + 1).fill(0));
                     console.log(vVecs);
 
-                    for (let k = 0; k < mc.nCol; k++) {
-                        console.log(i.toString(2) + ", " + (i.toString(2).charAt(k) == 1));
+                    for (let k = 0; k < mc.nCol - 1; k++) {
+                        let bina = i.toString(2).padStart(mc.nCol - 1, '0');
+                        console.log(bina + ", " + (bina.charAt(k) == 1));
 
-                        if (i.toString(2).charAt(k) == 1) {
+                        if (bina.charAt(k) == 1) {
                             vr = vr + "("
-                            for (let l = 0; l < mc.nRow; l++) {
+                            for (let l = 0; l < nRow; l++) {
                                 vVecs[l][c] = ogM[l][k];
                                 vr = vr + ogM[l][k];
 
-                                if (l !== mc.nRow - 1) {
+                                if (l !== nRow - 1) {
                                     vr = vr + ", ";
                                 }
                             }
@@ -795,7 +832,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
                     vr = vr + ">";
 
-                    let vecsMC = createMc(mc.nRow, rangeMatrix + 1, vVecs, true, true, basic);
+                    let vecsMC = createMc(nRow, rangeMatrix + 1, vVecs, true, true, basic);
                     solver.diagonalize(vecsMC, true);
                     let vecsSys = vecsMC.systematize();
 
@@ -827,7 +864,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
                 }
 
-                return { gen: v, steps: steps};
+                return { gen: v, steps: steps, dim: rangeMatrix};
             }
 
             return {

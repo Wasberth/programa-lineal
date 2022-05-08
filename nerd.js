@@ -49,6 +49,10 @@ function gcd(a, b) {
         return a;
     }
 
+    if (a.eq(one) || b.eq(one)) {
+        return one;
+    }
+
     let g = nerd.gcd(nerd.factor(a), b);
 
     console.log(`GCD of ${a.toString()} + ${b.toString()}: ` + g);
