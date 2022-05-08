@@ -5,6 +5,8 @@ const math = mathjs.create(mathjs.all, {
 
 function diagonalize(m, up = false) {
     const basic = m.basic;
+
+    m.simp();
     for (let ec = 0; ec < m.mc.nRow - 1; ec++) {
         pivot = chooseRow(basic, m, ec);
 

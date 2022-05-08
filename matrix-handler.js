@@ -34,19 +34,19 @@ function matrixDot(A, B) {
     } catch (error) {
         return undefined;
     }
-    
-    dotproduct = function(s,t) {
+
+    dotproduct = function (s, t) {
         console.log(s);
         console.log(t);
-        return s.map(function(x,i) {
+        return s.map(function (x, i) {
             return A.basic.multiply(s[i], t[i]);
-        }).reduce(function(m,n) { return A.basic.add(m, n); });
+        }).reduce(function (m, n) { return A.basic.add(m, n); });
     }
 
     console.log(B.getT());
 
-    return createMc(A.mc.nRow, B.mc.nCol, A.mc.matrix.map(function(x,i) {
-        return B.getT().mc.matrix.map(function(y,k) {
+    return createMc(A.mc.nRow, B.mc.nCol, A.mc.matrix.map(function (x, i) {
+        return B.getT().mc.matrix.map(function (y, k) {
             return dotproduct(x, y)
         });
     }));
@@ -763,8 +763,13 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
                 for (let i = 0; i < freeQ; i++) {
                     s = s + "(";
 
+                    console.log(JSON.stringify(frees, null, 4));
+                    console.log(JSON.stringify(subs));
+
+                    let vec = Array(mc.nCol - 1).fill(0);
+
                     for (let j = 0; j < mc.nCol - freeQ - 1; j++) {
-                        s = s + basic.multiply(basic.negate(frees[j].freeI[i]), facs[j]).toString() + ", ";
+                        vec[subs[j] - 1] = basic.multiply(basic.negate(frees[j].freeI[i]), facs[j]).toString();
                     }
 
                     for (let j = 0; j < freeQ; j++) {
@@ -774,10 +779,14 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
                             l = basic.one;
                         }
 
-                        s = s + basic.multiply(l, lcm).toString();
+                        vec[subs[j + rangeMatrix] - 1] = basic.multiply(l, lcm).toString();
+                    }
 
-                        if (j != freeQ - 1) {
-                            s = s + ", ";
+                    for (let j = 0; j < mc.nCol - 1; j++) {
+                        s = s + vec[j];
+
+                        if (j !== mc.nCol - 2) {
+                            s = s + ', ';
                         }
                     }
 
@@ -864,7 +873,7 @@ function createMc(nRow, nCol, matrix, canDeleteZeros = false, isReshapable = fal
 
                 }
 
-                return { gen: v, steps: steps, dim: rangeMatrix};
+                return { gen: v, steps: steps, dim: rangeMatrix };
             }
 
             return {
