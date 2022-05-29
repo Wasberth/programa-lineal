@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Transformaciones lineales</title>
+
+    <script src="js/canvas.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin: 0; height: 100%;">
+        <div class="row vh-100" style="margin: 0;">
+            <div class="col-4" style="max-height: 100vh;">
+                <div class="row overflow-scroll" style="height: 50%; display: block;">
+                    <form style="margin-top: 5px;">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">x:</span>
+                            <input id="xIn" type="number" class="form-control" aria-label="X">
+                            <span class="input-group-text">y:</span>
+                            <input id="yIn" type="number" class="form-control" aria-label="Y">
+                            <input id="addPointButton" type="button" class="form-control btn btn-primary" value="Añadir" aria-label="Submit">
+                        </div>
+                    </form>
+
+                    <div id="pointContainer">
+
+                    </div>
+                </div>
+                <div class="row overflow-scroll" style="height: 50%; display: block;">
+                    <div id="transContainer">
+                        <form style="margin-top: 5px;">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Reflejar</span>
+                                <input id="reflectX" type="button" class="form-control btn btn-success" value="X" aria-label="Submit">
+                                <input id="reflectY" type="button" class="form-control btn btn-success" value="Y" aria-label="Submit">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Expansión</span>
+                                <input id="cExIn" type="number" class="form-control" aria-label="c">
+                                <input id="expandX" type="button" class="form-control btn btn-success" value="X" aria-label="Submit">
+                                <input id="expandY" type="button" class="form-control btn btn-success" value="Y" aria-label="Submit">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Corte ejes</span>
+                                <input id="cCutIn" type="number" class="form-control" aria-label="c">
+                                <input id="cutX" type="button" class="form-control btn btn-success" value="X" aria-label="Submit">
+                                <input id="cutY" type="button" class="form-control btn btn-success" value="Y" aria-label="Submit">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Rotación origen</span>
+                                <input id="cRotIn" type="number" class="form-control" aria-label="c">
+                                <input id="rotateRad" type="button" class="form-control btn btn-success" value="Radianes" aria-label="Submit">
+                                <input id="rotateDeg" type="button" class="form-control btn btn-success" value="Grados" aria-label="Submit">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id="row-c" class="col-8">
+                <canvas id="XY" class="canvas-grapher" style="border:1px solid #000000; margin-top: 0.7%;"></canvas>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
